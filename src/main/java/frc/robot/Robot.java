@@ -14,6 +14,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Robot extends TimedRobot {
+  private Autonomous auto;
   private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
   private NetworkTableEntry tx = table.getEntry("tx");
   private NetworkTableEntry ty = table.getEntry("ty");
@@ -36,35 +37,30 @@ public class Robot extends TimedRobot {
 
   public void robotPeriodic() {
     // read values periodically
-    // double x = tx.getDouble(0.0);
+    double x = tx.getDouble(0.0);
     double y = ty.getDouble(0.0);
     double area = ta.getDouble(0.0);
 
-    //post to smart dashboard periodically
-    // SmartDashboard.putNumber("LimelightX", x);
-    // SmartDashboard.putNumber("LimelightY", y);
-    // SmartDashboard.putNumber("LimelightArea", area);
-    SmartDashboard.putNumber("LeftY", controller.getLeftY());
-
-    SmartDashboard.putString("DB/String 0",
+    //posts to dashboard periodically
+    SmartDashboard.putString("DB/String 0", // Shows area of camera taken up by part to the camera.
       "Area = " + String.format("%.3f", area));
-    SmartDashboard.putString("DB/String 1",
+    SmartDashboard.putString("DB/String 1", // Shows the vertical location of the object to the camera.
       "Y = " + String.format("%.3f", y));
-    SmartDashboard.putString("DB/String 2",
-      "X = " + String.format("%.3f", y));
-    SmartDashboard.putString("DB/String 9",
+    SmartDashboard.putString("DB/String 2", // Shows the horizontal location of the object to the camera.
+      "X = " + String.format("%.3f", x));
+    SmartDashboard.putString("DB/String 9", // Test if dashboard is working.
       "LeftStickY = " + controller.getLeftY());
   }
 
   @Override
   public void autonomousPeriodic()  {
     double x = tx.getDouble(0.0);
-    float steering_adjust = (float) (Kp * x);
+    double steering_adjust = Kp * x;
 
-    float left_command =+ steering_adjust;
-    float right_command =- steering_adjust;
+    Double left_command =+ steering_adjust;
+    Double right_command =- steering_adjust;
 
-    
+    auto.drive(left_command, right_command);
   }
 
   @Override

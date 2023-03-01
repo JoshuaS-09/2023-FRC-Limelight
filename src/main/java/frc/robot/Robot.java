@@ -17,6 +17,7 @@ public class Robot extends TimedRobot {
 
   // Autonomous
   // private Autonomous auto;
+  private Drivetrain drivetrain;
   // Limelight
   private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
   private NetworkTableEntry tx = table.getEntry("tx");
@@ -76,6 +77,8 @@ public class Robot extends TimedRobot {
       double steeringAdjust = Kp * x;
       leftSpeed += steeringAdjust;
       rightSpeed -= steeringAdjust;
+
+      drivetrain.drive.tankDrive(leftSpeed, rightSpeed);
     }
   }
 }

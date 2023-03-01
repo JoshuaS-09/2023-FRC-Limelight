@@ -14,17 +14,19 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Robot extends TimedRobot {
-  private Autonomous auto;
+
+  // Autonomous
+  // private Autonomous auto;
+  // Limelight
   private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
   private NetworkTableEntry tx = table.getEntry("tx");
   private NetworkTableEntry ty = table.getEntry("ty");
   private NetworkTableEntry ta = table.getEntry("ta");
-  private float Kp = -0.1f;
-  
-// private final PWMSparkMax m_leftMotor = new PWMSparkMax(0);
-  // private final PWMSparkMax m_rightMotor = new PWMSparkMax(1);
-  // private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
+    
   private final XboxController controller = new XboxController(0);
+
+  public double leftSpeed;
+  public double rightSpeed;
 
   @Override
   public void robotInit() {
@@ -41,28 +43,39 @@ public class Robot extends TimedRobot {
     double y = ty.getDouble(0.0);
     double area = ta.getDouble(0.0);
 
+    // double targetOffsetAngle_Vertical = ty.getDouble(0.0);
+    // double limelightAngle = 0; // the amount of degrees back the limelight is mounted from vertical.
+    // double limelightHeight = 6.7; // Distance from center of limelight lens to floor (Inches).
+    // double goalHeight = 6.3; // Distance of target from floor (Inches).
+    // // Math time
+    // double angleToGoalDegrees = limelightAngle + targetOffsetAngle_Vertical;
+    // double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+    // //calculate distance
+    // double distanceToGoal = (goalHeight - limelightHeight)/Math.tan(angleToGoalRadians);
+
     //posts to dashboard periodically
-    SmartDashboard.putString("DB/String 0", // Shows area of camera taken up by part to the camera.
+    SmartDashboard.putString("Area", // Shows area of camera taken up by part to the camera.
       "Area = " + String.format("%.3f", area));
-    SmartDashboard.putString("DB/String 1", // Shows the vertical location of the object to the camera.
+    SmartDashboard.putString("Y", // Shows the vertical location of the object to the camera.
       "Y = " + String.format("%.3f", y));
-    SmartDashboard.putString("DB/String 2", // Shows the horizontal location of the object to the camera.
+    SmartDashboard.putString("X", // Shows the horizontal location of the object to the camera.
       "X = " + String.format("%.3f", x));
-    SmartDashboard.putString("DB/String 9", // Test if dashboard is working.
+    // SmartDashboard.putString("Distance", // Shows the distance between the limelight and the object.
+    //   "Distance(MTEST) = " + String.format("%.3f", distanceToGoal));
+    SmartDashboard.putString("Controller Left Y", // Test if dashboard is working.
       "LeftStickY = " + controller.getLeftY());
   }
 
   @Override
-  public void autonomousPeriodic()  {
+  public void teleopPeriodic() {
     double x = tx.getDouble(0.0);
-    double steering_adjust = Kp * x;
+    double Kp = 0.1;
 
-    Double left_command =+ steering_adjust;
-    Double right_command =- steering_adjust;
-
-    auto.drive(left_command, right_command);
+    if (controller.getAButtonPressed()) {
+      
+      double steeringAdjust = Kp * x;
+      leftSpeed += steeringAdjust;
+      rightSpeed -= steeringAdjust;
+    }
   }
-
-  @Override
-  public void teleopPeriodic() {}
 }

@@ -64,7 +64,7 @@ public class Robot extends TimedRobot {
     double x = tx.getDouble(0.0);
     double Kp = 0.03; // 0.1;
     
-    if (controller.getRightBumper()) {
+    if (controller.getRightBumper()) {      
       steeringAdjust = Kp * x;
       double driveSpeed = -0.25;
       leftSpeed = driveSpeed + steeringAdjust;

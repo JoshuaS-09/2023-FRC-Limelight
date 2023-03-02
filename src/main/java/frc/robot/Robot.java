@@ -29,6 +29,7 @@ public class Robot extends TimedRobot {
   public double leftSpeed;
   public double rightSpeed;
   public double steeringAdjust;
+  public double distanceAdjust;
 
   @Override
   public void robotInit() {
@@ -62,18 +63,33 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     double x = tx.getDouble(0.0);
-    double Kp = 0.03; // 0.1;
-    
-    if (controller.getRightBumper()) {      
-      steeringAdjust = Kp * x;
-      double driveSpeed = -0.25;
-      leftSpeed = driveSpeed + steeringAdjust;
-      rightSpeed = driveSpeed - steeringAdjust;
+    double area = ta.getDouble(0.0);
+    double KpSteer; // 0.0255
+    double KpDistance = 0.0375;
+
+    if (controller.getRightBumper()) {
+      if (Math.abs(x) > 18) {
+        KpSteer = 0.025; 
+      } else {
+        KpSteer = 0.0375;
+      }
+      steeringAdjust = KpSteer * x;
+      double distError = 10.0 - area;
+      distanceAdjust = KpDistance * distError; // TO DO: FAR AWAY = BIG KP, CLOSE UP = SMALL KP
+      double driveSpeed = 0; // -0.25
+
+      leftSpeed = driveSpeed + steeringAdjust - distanceAdjust;
+      rightSpeed = driveSpeed - steeringAdjust - distanceAdjust;
 
       SmartDashboard.putString("Left Speed", // Test if dashboard is working.
           "Left Speed = " + leftSpeed);
       SmartDashboard.putString("Right Speed", // Test if dashboard is working.
           "Right Speed = " + rightSpeed);
+      SmartDashboard.putString("Distance Adjust", // Test if dashboard is working.
+          "Dist Adjust= " + distanceAdjust);
+      SmartDashboard.putString("Distance Error", // Test if dashboard is working.
+          "Dist Error= " + distError);
+      
 
       drivetrain.drive.tankDrive(leftSpeed, rightSpeed);
     } else {
@@ -81,3 +97,11 @@ public class Robot extends TimedRobot {
     }
   }
 }
+
+/**
+ * Pipline:
+ * 0 = Retroreflective tape
+ * 1 = Orange big ball
+ * 2 = Purple cube
+ * 3 = Apriltags
+ */

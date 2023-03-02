@@ -17,6 +17,7 @@ public class Robot extends TimedRobot {
 
   // Autonomous
   // private Autonomous auto;
+  private Drivetrain drivetrain;
   // Limelight
   private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
   private NetworkTableEntry tx = table.getEntry("tx");
@@ -27,6 +28,7 @@ public class Robot extends TimedRobot {
 
   public double leftSpeed;
   public double rightSpeed;
+  public double steeringAdjust;
 
   @Override
   public void robotInit() {
@@ -35,6 +37,7 @@ public class Robot extends TimedRobot {
     // gearbox is constructed, you might have to invert the left side instead.
 
     // m_rightMotor.setInverted(true);
+    drivetrain = new Drivetrain();
   }
 
   public void robotPeriodic() {
@@ -42,16 +45,6 @@ public class Robot extends TimedRobot {
     double x = tx.getDouble(0.0);
     double y = ty.getDouble(0.0);
     double area = ta.getDouble(0.0);
-
-    // double targetOffsetAngle_Vertical = ty.getDouble(0.0);
-    // double limelightAngle = 0; // the amount of degrees back the limelight is mounted from vertical.
-    // double limelightHeight = 6.7; // Distance from center of limelight lens to floor (Inches).
-    // double goalHeight = 6.3; // Distance of target from floor (Inches).
-    // // Math time
-    // double angleToGoalDegrees = limelightAngle + targetOffsetAngle_Vertical;
-    // double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
-    // //calculate distance
-    // double distanceToGoal = (goalHeight - limelightHeight)/Math.tan(angleToGoalRadians);
 
     //posts to dashboard periodically
     SmartDashboard.putString("Area", // Shows area of camera taken up by part to the camera.
@@ -69,13 +62,22 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     double x = tx.getDouble(0.0);
-    double Kp = 0.1;
+    double Kp = 0.03; // 0.1;
+    
+    if (controller.getRightBumper()) {
+      steeringAdjust = Kp * x;
+      double driveSpeed = -0.25;
+      leftSpeed = driveSpeed + steeringAdjust;
+      rightSpeed = driveSpeed - steeringAdjust;
 
-    if (controller.getAButtonPressed()) {
-      
-      double steeringAdjust = Kp * x;
-      leftSpeed += steeringAdjust;
-      rightSpeed -= steeringAdjust;
+      SmartDashboard.putString("Left Speed", // Test if dashboard is working.
+          "Left Speed = " + leftSpeed);
+      SmartDashboard.putString("Right Speed", // Test if dashboard is working.
+          "Right Speed = " + rightSpeed);
+
+      drivetrain.drive.tankDrive(leftSpeed, rightSpeed);
+    } else {
+      drivetrain.drive.tankDrive(0, 0);
     }
   }
 }

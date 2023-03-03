@@ -6,16 +6,14 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-// import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-// import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
-public class Robot extends TimedRobot {
 
-  // Autonomous
+public class Robot extends TimedRobot {
+  private Vision vision;
   // private Autonomous auto;
   private Drivetrain drivetrain;
   // Limelight
@@ -33,12 +31,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    // We need to invert one side of the drivetrain so that positive voltages
-    // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
-
-    // m_rightMotor.setInverted(true);
     drivetrain = new Drivetrain();
+    vision = new Vision();
   }
 
   public void robotPeriodic() {
@@ -54,8 +48,6 @@ public class Robot extends TimedRobot {
       "Y = " + String.format("%.3f", y));
     SmartDashboard.putString("X", // Shows the horizontal location of the object to the camera.
       "X = " + String.format("%.3f", x));
-    // SmartDashboard.putString("Distance", // Shows the distance between the limelight and the object.
-    //   "Distance(MTEST) = " + String.format("%.3f", distanceToGoal));
     SmartDashboard.putString("Controller Left Y", // Test if dashboard is working.
       "LeftStickY = " + controller.getLeftY());
   }
@@ -68,6 +60,8 @@ public class Robot extends TimedRobot {
     double KpDistance = 0.0375;
 
     if (controller.getRightBumper()) {
+      //table.getEntry("ledMode").setNumber(0);
+      table.getEntry("pipeline").setNumber(2);
       if (Math.abs(x) > 18) {
         KpSteer = 0.025; 
       } else {
@@ -78,8 +72,8 @@ public class Robot extends TimedRobot {
       distanceAdjust = KpDistance * distError; // TO DO: FAR AWAY = BIG KP, CLOSE UP = SMALL KP
       double driveSpeed = 0; // -0.25
 
-      leftSpeed = driveSpeed + steeringAdjust - distanceAdjust;
-      rightSpeed = driveSpeed - steeringAdjust - distanceAdjust;
+      leftSpeed = driveSpeed + steeringAdjust; // - distanceAdjust;
+      rightSpeed = driveSpeed - steeringAdjust; //- distanceAdjust;
 
       SmartDashboard.putString("Left Speed", // Test if dashboard is working.
           "Left Speed = " + leftSpeed);
@@ -89,9 +83,37 @@ public class Robot extends TimedRobot {
           "Dist Adjust= " + distanceAdjust);
       SmartDashboard.putString("Distance Error", // Test if dashboard is working.
           "Dist Error= " + distError);
-      
 
       drivetrain.drive.tankDrive(leftSpeed, rightSpeed);
+
+
+    } else if (controller.getLeftBumper()) {
+      //table.getEntry("ledMode").setNumber(2);
+      table.getEntry("pipeline").setNumber(3);
+      if (Math.abs(x) > 18) {
+        KpSteer = 0.025; 
+      } else {
+        KpSteer = 0.0375;
+      }
+      steeringAdjust = KpSteer * x;
+      double distError = 10.0 - area;
+      distanceAdjust = KpDistance * distError; // TO DO: FAR AWAY = BIG KP, CLOSE UP = SMALL KP
+      double driveSpeed = 0; // -0.25
+
+      leftSpeed = driveSpeed + steeringAdjust; // - distanceAdjust;
+      rightSpeed = driveSpeed - steeringAdjust; //- distanceAdjust;
+
+      SmartDashboard.putString("Left Speed", // Test if dashboard is working.
+          "Left Speed = " + leftSpeed);
+      SmartDashboard.putString("Right Speed", // Test if dashboard is working.
+          "Right Speed = " + rightSpeed);
+      SmartDashboard.putString("Distance Adjust", // Test if dashboard is working.
+          "Dist Adjust= " + distanceAdjust);
+      SmartDashboard.putString("Distance Error", // Test if dashboard is working.
+          "Dist Error= " + distError);
+
+      drivetrain.drive.tankDrive(leftSpeed, rightSpeed);
+
     } else {
       drivetrain.drive.tankDrive(0, 0);
     }
